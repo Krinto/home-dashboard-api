@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,11 +32,19 @@ namespace home_dashboard_api
         {
             var appSettings = Configuration.Get<AppSettings>();
 
-            services.AddControllers();
+            services
+                .AddSwaggerGenNewtonsoftSupport()
+                .AddMvcCore()
+                .AddApiExplorer()
+                .AddNewtonsoftJson(opts =>
+                {
+                    opts.SerializerSettings.Converters.Add(new StringEnumConverter());
+                });
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Home Dashboard API", Version = "v1" });
-            });
+            });            
 
             services.AddHttpClient("coinmarketcap", c =>
             {
@@ -48,8 +57,18 @@ namespace home_dashboard_api
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
             });
 
+            services.AddHttpClient("landfill", c =>
+            {
+                c.BaseAddress = new Uri(appSettings.LandfillSettings.BaseUrl);
+                c.DefaultRequestHeaders.Add("Accepts", "application/json");
+            }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+            });
+
             services.AddSingleton<IAppSettings>(appSettings);
             services.AddScoped<ICoinmarketcapService, CoinmarketcapService>();
+            services.AddScoped<ILandfillService, LandfillService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -65,8 +84,6 @@ namespace home_dashboard_api
             app.UseHttpsRedirection();
 
             app.UseRouting();
-
-            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
