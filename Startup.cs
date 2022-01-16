@@ -48,8 +48,8 @@ namespace home_dashboard_api
 
             services.AddHttpClient("coinmarketcap", c =>
             {
-                c.BaseAddress = new Uri(appSettings.CoinmarketcapSettings.BaseUrl);
-                c.DefaultRequestHeaders.Add("X-CMC_PRO_API_KEY", appSettings.CoinmarketcapSettings.ApiKey);
+                c.BaseAddress = new Uri(appSettings.Coinmarketcap.BaseUrl);
+                c.DefaultRequestHeaders.Add("X-CMC_PRO_API_KEY", appSettings.Coinmarketcap.ApiKey);
                 c.DefaultRequestHeaders.Add("Accepts", "application/json");
                 c.DefaultRequestHeaders.Add("Accept-Encoding", "deflate, gzip");
             }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
@@ -59,12 +59,26 @@ namespace home_dashboard_api
 
             services.AddHttpClient("landfill", c =>
             {
-                c.BaseAddress = new Uri(appSettings.LandfillSettings.BaseUrl);
+                c.BaseAddress = new Uri(appSettings.Landfill.BaseUrl);
                 c.DefaultRequestHeaders.Add("Accepts", "application/json");
+                c.DefaultRequestHeaders.Add("Accept-Encoding", "deflate, gzip");
             }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
             {
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
             });
+
+            services.AddHttpClient("metservice", c =>
+            {
+                c.BaseAddress = new Uri(appSettings.Metservice.BaseUrl);
+                c.DefaultRequestHeaders.Add("Accepts", "application/json");
+                c.DefaultRequestHeaders.Add("Accept-Encoding", "deflate, gzip");
+            }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+            });
+
+            services.AddMemoryCache();
+            services.AddCors();
 
             services.AddSingleton<IAppSettings>(appSettings);
             services.AddScoped<ICoinmarketcapService, CoinmarketcapService>();
@@ -82,8 +96,8 @@ namespace home_dashboard_api
             }
 
             app.UseHttpsRedirection();
-
             app.UseRouting();
+            app.UseCors(options => options.WithOrigins("https://localhost:3000").AllowAnyHeader().AllowAnyMethod());
 
             app.UseEndpoints(endpoints =>
             {

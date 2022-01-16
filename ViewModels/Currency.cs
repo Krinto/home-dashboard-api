@@ -16,6 +16,6 @@ namespace home_dashboard_api.ViewModels
         public double PercentChange7d { get; set; }
         public DateTimeOffset LastUpdated { get; set; }
         public double MarketCap { get; set; }
-        public string PriceCurrency { get; set; }
+        public string PriceCurrency { get; set; } = String.Empty;
     }
 }

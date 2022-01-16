@@ -23,7 +23,7 @@ namespace home_dashboard_api.Controllers
         }
 
         [HttpGet]
-        [Route("get")]
+        [Route("getDays")]
         [ProducesResponseType(typeof(IList<LandfillDay>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IList<LandfillDay>> GetLandfillDays()
@@ -32,7 +32,7 @@ namespace home_dashboard_api.Controllers
         }
 
         [HttpGet]
-        [Route("get/{address}")]
+        [Route("getDaysByAddress/{address}")]
         [ProducesResponseType(typeof(IList<LandfillDay>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IList<LandfillDay>> GetLandfillDays([FromRoute] string address)

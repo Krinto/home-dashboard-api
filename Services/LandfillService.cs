@@ -29,7 +29,7 @@ namespace home_dashboard_api.Services
         public async Task<IList<LandfillDay>> GetLandfillDays(string? address)
         {
             var parameters = new Dictionary<string, string?>() {
-                { "address_string", address ?? settings.LandfillSettings.HomeAddress }
+                { "address_string", address ?? settings.Landfill.HomeAddress }
             };
 
             var url = new Uri(QueryHelpers.AddQueryString("get_Collection_Dates", parameters), UriKind.Relative);

@@ -2,6 +2,7 @@
 using home_dashboard_api.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -18,11 +19,21 @@ namespace home_dashboard_api.Controllers
     {
         private readonly ILogger<CryptoController> logger;
         private readonly ICoinmarketcapService coinmarketcapService;
+        private readonly IMemoryCache memoryCache;
 
-        public CryptoController(ILogger<CryptoController> logger, ICoinmarketcapService coinmarketcap)
+        private readonly MemoryCacheEntryOptions cacheExpiryOptions = new MemoryCacheEntryOptions
+        {
+            AbsoluteExpiration = DateTime.Now.AddMinutes(15),
+            Priority = CacheItemPriority.High,
+            SlidingExpiration = TimeSpan.FromMinutes(7.5),
+            Size = 1024,
+        };
+
+        public CryptoController(ILogger<CryptoController> logger, ICoinmarketcapService coinmarketcap, IMemoryCache memoryCache)
         {
             this.logger = logger;
             coinmarketcapService = coinmarketcap;
+            this.memoryCache = memoryCache;
         }
 
         [HttpGet]
@@ -31,7 +42,16 @@ namespace home_dashboard_api.Controllers
         [Route("getQuotes")]
         public async Task<ActionResult<IEnumerable<Currency>>> GetQuotes([FromQuery] GetQuotesQuery quotesQuery)
         {
-            return Ok(await coinmarketcapService.GetLatestQuotes(quotesQuery.Slugs, quotesQuery.Currency));
+            var cacheKey = $"{quotesQuery.Ids}${quotesQuery.Currency}";
+            var currencyList = await memoryCache.GetOrCreateAsync(cacheKey, async entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15);
+                entry.SlidingExpiration = TimeSpan.FromMinutes(7.5);
+                entry.Priority = CacheItemPriority.High;
+                entry.Size = 1024;
+                return await coinmarketcapService.GetLatestQuotes(quotesQuery.Ids, quotesQuery.Currency);
+            });
+            return Ok(currencyList);
         }
     }
 
@@ -40,10 +60,10 @@ namespace home_dashboard_api.Controllers
         [FromQuery]
         [DefaultValue("bitcoin,ethereum")]
         [Description("Comma seperated currency slugs with no spaces")]
-        public string Slugs { get; set; }
+        public string Ids { get; set; } = string.Empty;
         [FromQuery]
         [DefaultValue("NZD")]
         [Description("Only provide one currency ticker free tier only allows single conversion")]
-        public string Currency { get; set; }
+        public string Currency { get; set; } = string.Empty;
     }
 }

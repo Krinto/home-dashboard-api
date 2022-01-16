@@ -11,7 +11,7 @@ namespace home_dashboard_api.Models
 
         public List<ItemData> DataList { get; set; } = new List<ItemData>();
 
-        private Dictionary<string, ItemData> _dataItemList;
+        private Dictionary<string, ItemData> _dataItemList = new Dictionary<string, ItemData>();
         [JsonProperty(PropertyName = "data")]
         public Dictionary<string, ItemData> DataDictionary
         {

@@ -2,25 +2,34 @@
 {
     public interface IAppSettings
     {
-        CoinmarketcapSettings CoinmarketcapSettings { get; set; }
-        LandfillSettings LandfillSettings { get; set; }
+        Coinmarketcap Coinmarketcap { get; set; }
+        Landfill Landfill { get; set; }
+        Metservice Metservice { get; set; }
     }
 
     public class AppSettings: IAppSettings
     {
-        public CoinmarketcapSettings CoinmarketcapSettings { get; set; }
-        public LandfillSettings LandfillSettings { get; set; }
+        public Coinmarketcap Coinmarketcap { get; set; } = new Coinmarketcap();
+        public Landfill Landfill { get; set; } = new Landfill();
+        public Metservice Metservice { get; set; } = new Metservice();
     }
 
-    public class CoinmarketcapSettings
+    public class Coinmarketcap: ApiBase
     {
-        public string ApiKey { get; set; }
-        public string BaseUrl { get; set; }
+        public string ApiKey { get; set; } = string.Empty;
     }
 
-    public class LandfillSettings
+    public class Landfill: ApiBase
     {
-        public string BaseUrl { get; set; }
-        public string HomeAddress { get; set; }
+        public string HomeAddress { get; set; } = string.Empty;
+    }
+
+    public class Metservice: ApiBase
+    {
+    }
+
+    public abstract class ApiBase
+    {
+        public string BaseUrl { get; set; } = string.Empty;
     }
 }

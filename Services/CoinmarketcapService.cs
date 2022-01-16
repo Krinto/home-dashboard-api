@@ -12,7 +12,7 @@ namespace home_dashboard_api.Services
 {
     public interface ICoinmarketcapService
     {
-        Task<IList<Currency>> GetLatestQuotes(string? slugs, string? convert);
+        Task<IList<Currency>> GetLatestQuotes(string ids, string convert);
     }
 
     public class CoinmarketcapService: ICoinmarketcapService
@@ -26,18 +26,18 @@ namespace home_dashboard_api.Services
             client = clientFactory.CreateClient("coinmarketcap");
         }
 
-        public async Task<IList<Currency>> GetLatestQuotes(string? slugs, string? convert)
+        public async Task<IList<Currency>> GetLatestQuotes(string ids, string convert)
         {
-            var conversionCurrency = convert ?? DEFAULT_CURRENCY;
+            var conversionCurrency = string.IsNullOrWhiteSpace(convert) ? DEFAULT_CURRENCY : convert;
 
-            if(slugs == null)
+            if(string.IsNullOrWhiteSpace(ids))
             {
-                throw new Exception("You must provide currency slugs");
+                throw new Exception("You must provide coinmarketcap currency ids");
             }
 
             var parameters = new Dictionary<string, string?>() { 
                 { "convert", conversionCurrency },
-                { "slug", slugs.ToLower()}
+                { "id", ids}
             };
 
             var url = new Uri(QueryHelpers.AddQueryString("quotes/latest", parameters), UriKind.Relative);
